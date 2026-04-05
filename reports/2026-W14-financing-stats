@@ -1,0 +1,1224 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>72IB | Weekly Deal Activity Insights</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400;1,6..72,500&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          pageBg: '#fdfbf7',
+          surfaceBg: '#f3efe6',
+          textMain: '#1a1a18',
+          textMuted: '#666660',
+          brandGreen: '#1b4a36',
+          brandGreenHover: '#133527',
+          brandGreenDark: '#0a2418',
+          chartLight: '#7a9f5a',
+          chartDark: '#1c5236',
+          borderSubtle: '#e8e4db',
+          borderStrong: '#ccc9c0',
+          negativeRed: '#8b3a3a'
+        },
+        fontFamily: {
+          serif: ['"Newsreader"', 'Georgia', 'serif'],
+          sans: ['"Manrope"', 'system-ui', 'sans-serif'],
+        },
+      }
+    }
+  }
+</script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+
+:root {
+  --ease-out: cubic-bezier(0.16,1,0.3,1);
+  --ease-in-out: cubic-bezier(0.45,0,0.55,1);
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  background-color: #fdfbf7;
+  color: #1a1a18;
+  font-family: 'Manrope', system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+
+::selection { background: #1b4a36; color: #fff; }
+
+::-webkit-scrollbar { width: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #ccc9c0; border-radius: 3px; }
+
+/* ── PROGRESS ── */
+#progress-bar {
+  position: fixed; top: 0; left: 0; width: 100%; height: 2px;
+  background: #1b4a36; transform-origin: 0 50%; transform: scaleX(0);
+  z-index: 200; transition: transform 0.08s linear;
+}
+
+/* ── NAV ── */
+nav#navbar {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+  height: 60px;
+  background: rgba(253,251,247,0.93);
+  backdrop-filter: blur(14px);
+  border-bottom: 1px solid #e8e4db;
+  transition: box-shadow 0.3s;
+}
+nav#navbar.scrolled { box-shadow: 0 1px 24px rgba(0,0,0,0.07); }
+.nav-inner {
+  width: 100%; max-width: 1400px; margin: 0 auto;
+  height: 60px; padding: 0 2rem;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.nav-logo {
+  font-family: 'Newsreader', serif;
+  font-size: 12px; letter-spacing: 0.18em; text-transform: uppercase;
+  text-align: center; line-height: 1.3; cursor: pointer; font-weight: 600;
+  color: #1a1a18; text-decoration: none;
+  transition: color 0.2s;
+}
+.nav-logo:hover { color: #1b4a36; }
+.nav-icon-btn {
+  background: none; border: none; cursor: pointer;
+  color: #1a1a18; padding: 8px;
+  display: flex; align-items: center; gap: 8px;
+  font-family: 'Manrope', sans-serif; font-size: 11px;
+  font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase;
+  transition: color 0.2s;
+}
+.nav-icon-btn:hover { color: #1b4a36; }
+.subscribe-pill {
+  display: inline-block;
+  padding: 8px 20px;
+  border: 1px solid #1b4a36;
+  background: none; color: #1b4a36;
+  font-family: 'Manrope', sans-serif;
+  font-size: 10px; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase;
+  cursor: pointer; text-decoration: none;
+  transition: background 0.25s, color 0.25s;
+}
+.subscribe-pill:hover { background: #1b4a36; color: #fff; }
+
+/* ── DRAWER (right) ── */
+#drawer-overlay {
+  position: fixed; inset: 0; z-index: 150;
+  background: rgba(26,26,24,0.4); backdrop-filter: blur(4px);
+  opacity: 0; pointer-events: none;
+  transition: opacity 0.4s var(--ease-out);
+}
+#drawer-overlay.open { opacity: 1; pointer-events: auto; }
+#drawer {
+  position: fixed; top: 0; right: 0; bottom: 0;
+  width: min(400px,100vw);
+  background: #fdfbf7; z-index: 160;
+  transform: translateX(100%);
+  transition: transform 0.5s var(--ease-out);
+  overflow-y: auto; padding: 2rem;
+  overscroll-behavior: contain;
+}
+#drawer.open { transform: translateX(0); }
+.drawer-header {
+  display: flex; justify-content: space-between; align-items: center;
+  margin-bottom: 2.5rem; padding-bottom: 1rem; border-bottom: 1px solid #e8e4db;
+}
+.drawer-label { font-size: 10px; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; color: #8a8a84; }
+.drawer-close {
+  background: none; border: none; cursor: pointer; color: #1a1a18; padding: 4px;
+  transition: color 0.2s, transform 0.3s;
+}
+.drawer-close:hover { color: #1b4a36; transform: rotate(90deg); }
+.drawer-article { cursor: pointer; padding: 1.25rem 0; border-bottom: 1px solid #e8e4db; }
+.drawer-article:last-child { border-bottom: none; }
+.drawer-cat { font-size: 9px; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase; color: #8a8a84; margin-bottom: .6rem; }
+.drawer-title {
+  font-family: 'Newsreader', serif; font-size: 1.3rem; line-height: 1.25;
+  color: #1a1a18; transition: color 0.25s; margin-bottom: .4rem;
+}
+.drawer-article:hover .drawer-title { color: #1b4a36; }
+.drawer-author { font-size: 11px; color: #8a8a84; }
+
+/* ── PAGES ── */
+.page { display: none; animation: pageIn 0.55s var(--ease-out) both; }
+.page.active { display: block; }
+@keyframes pageIn {
+  from { opacity: 0; transform: translateY(14px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.page-inner { max-width: 1400px; margin: 0 auto; padding: 96px 2rem 80px; }
+
+/* ── ARTICLE HEADER ── */
+.article-eyebrow { font-size: 10px; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; color: #8a8a84; }
+.article-title {
+  font-family: 'Newsreader', serif;
+  font-size: clamp(2.4rem, 5vw, 3.8rem);
+  line-height: 1.05; letter-spacing: -0.02em;
+  color: #1a1a18; margin-top: 1rem; max-width: 820px;
+}
+.article-byline { display: flex; align-items: center; gap: 12px; margin-top: 2rem; }
+.byline-avatar {
+  width: 44px; height: 44px; border-radius: 50%;
+  background: #f3efe6; border: 2px solid #e8e4db;
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Newsreader', serif; font-size: 13px; color: #1b4a36; flex-shrink: 0;
+}
+.byline-name { font-weight: 700; font-size: 13px; }
+.byline-date { font-size: 11px; color: #8a8a84; margin-top: 2px; }
+.header-rule { height: 1px; background: #e8e4db; margin-top: 2.5rem; }
+
+/* ── 2-COLUMN GRID (TOC + Article) ── */
+.article-grid { display: grid; grid-template-columns: 1fr; gap: 3rem; align-items: flex-start; }
+@media (min-width: 1024px) {
+  .article-grid { grid-template-columns: 220px 1fr; gap: 0 4rem; }
+}
+
+/* ── LEFT TOC ── */
+.toc { position: sticky; top: 80px; z-index: 90; }
+.toc nav { position: relative; }
+.toc nav::before {
+  content: ''; position: absolute; left: 0; top: 0; bottom: 0;
+  width: 2px; background: #e8e4db;
+}
+.toc-link {
+  display: block; padding: 6px 0 6px 16px;
+  font-size: 11px; line-height: 1.4;
+  color: #8a8a84; text-decoration: none;
+  border-left: 2px solid transparent; margin-left: -2px;
+  transition: color 0.2s, border-color 0.2s;
+}
+.toc-link.active { color: #1a1a18; border-left-color: #1b4a36; font-weight: 700; }
+.toc-link:hover:not(.active) { color: #4a4a46; }
+
+@media (max-width: 1023px) {
+  .toc {
+    display: block; position: sticky; top: 59px;
+    background: #fdfbf7; margin: 0 -2rem 2rem -2rem;
+    padding: 0 2rem; border-bottom: 1px solid #e8e4db; z-index: 95;
+  }
+  .toc nav::before { display: none; }
+  .toc nav {
+    display: flex; gap: 1.5rem; overflow-x: auto;
+    white-space: nowrap; padding-bottom: 0px;
+    -webkit-overflow-scrolling: touch;
+  }
+  .toc nav::-webkit-scrollbar { display: none; }
+  .toc-link {
+    border-left: none; border-bottom: 2px solid transparent;
+    padding: 12px 0; margin: 0;
+  }
+  .toc-link.active { border-left-color: transparent; border-bottom-color: #1b4a36; }
+}
+
+/* ── ARTICLE BODY ── */
+.lead-text {
+  font-family: 'Newsreader', serif;
+  font-size: clamp(1.15rem, 2vw, 1.35rem);
+  line-height: 1.65; letter-spacing: -0.01em;
+  color: #1a1a18; margin-bottom: 2.5rem;
+}
+.body-text {
+  font-family: 'Newsreader', serif;
+  font-size: 1.05rem; line-height: 1.8;
+  color: #1a1a18; margin-bottom: 1.5rem;
+}
+.body-text strong { font-weight: 600; }
+
+/* ── CHART FIG ── */
+.chart-fig {
+  background: #f3efe6; border: 1px solid #e8e4db;
+  padding: 2.5rem; margin: 3rem 0; position: relative;
+}
+.chart-title {
+  font-family: 'Newsreader', serif; font-size: 1.65rem;
+  line-height: 1.2; color: #1e2f42; margin-bottom: 0.5rem;
+}
+.chart-sub { font-size: 11px; color: #8a8a84; margin-bottom: 3rem; line-height: 1.5; }
+.chart-area { position: relative; height: 320px; padding-left: 44px; padding-bottom: 44px; margin-top: 1rem; }
+.chart-y-labels {
+  position: absolute; left: 0; top: 0; bottom: 44px;
+  display: flex; flex-direction: column; justify-content: space-between;
+  align-items: flex-end; padding-right: 8px;
+}
+.chart-y-label { font-size: 10px; color: #8a8a84; font-weight: 600; }
+.chart-grid-lines { position: absolute; left: 44px; right: 0; top: 0; bottom: 44px; }
+.chart-grid-line { position: absolute; left: 0; right: 0; border-top: 1px solid rgba(0,0,0,.08); }
+.chart-bars-row {
+  position: absolute; left: 44px; right: 0; top: 0; bottom: 44px;
+  display: flex; align-items: flex-end; justify-content: space-around; gap: 8px; padding: 0 8px;
+}
+.bar-group {
+  flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: flex-end;
+  position: relative; height: 100%; cursor: pointer; max-width: 50px;
+}
+.bar-seg {
+  width: 100%; background: #1b4a36;
+  transition: opacity 0.2s, background 0.2s;
+  z-index: 2; border-radius: 2px 2px 0 0;
+}
+.bar-group:hover .bar-seg { opacity: 0.85; }
+.deal-count-pill {
+  position: absolute; background: #fdfbf7; border: 1px solid #ccc9c0;
+  color: #666660; font-size: 9px; font-weight: 700; border-radius: 12px;
+  padding: 2px 8px; z-index: 3; transition: all 0.3s; transform: translateY(-50%);
+}
+.bar-group:hover .deal-count-pill { border-color: #1b4a36; color: #1b4a36; }
+.bar-x-label {
+  position: absolute; bottom: -28px;
+  font-size: 10px; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase;
+  color: #8a8a84; text-align: center; white-space: nowrap;
+}
+.chart-tooltip {
+  position: absolute; bottom: 100%; left: 50%; transform: translateX(-50%) translateY(-10px);
+  background: #1a1a18; color: #fdfbf7; padding: 12px 16px; min-width: 180px;
+  pointer-events: none; opacity: 0; transition: opacity 0.2s, transform 0.2s;
+  z-index: 10; font-family: 'Manrope', sans-serif; text-align: left;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+.bar-group:hover .chart-tooltip { opacity: 1; transform: translateX(-50%) translateY(0); }
+.tt-title { font-size: 9px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: #8a8a84; margin-bottom: 8px; border-bottom: 1px solid #333; padding-bottom: 4px;}
+.tt-row { display: flex; justify-content: space-between; font-size: 11px; margin-bottom: 4px; }
+.tt-row .val { font-weight: 700; color: #7a9f5a; }
+.chart-legend {
+  display: flex; justify-content: center; gap: 2rem; margin-top: 3rem;
+  padding-top: 1rem; border-top: 1px solid #e8e4db;
+}
+.legend-item { display: flex; align-items: center; gap: 8px; font-size: 10px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: #4a4a46; }
+.legend-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+.chart-footnote {
+  margin-top: 1.5rem; font-size: 10px; color: #8a8a84; line-height: 1.5;
+  border-top: 1px solid #e8e4db; padding-top: 1rem;
+}
+.chart-branding {
+  display: flex; justify-content: space-between; align-items: center;
+  margin-top: 1rem; font-size: 10px; color: #8a8a84;
+}
+.chart-branding-logo {
+  font-family: 'Newsreader', serif; font-size: 13px; letter-spacing: 0.18em;
+  text-transform: uppercase; color: #ccc9c0; font-weight: 600;
+}
+
+/* ── EDITORIAL TABLES ── */
+.table-wrapper { overflow-x: auto; margin: 2rem 0; background: #fdfbf7; }
+.editorial-table { width: 100%; border-collapse: collapse; text-align: left; }
+.editorial-table th {
+  font-family: 'Manrope', sans-serif; font-size: 8.5px; font-weight: 700;
+  letter-spacing: 0.12em; text-transform: uppercase; color: #8a8a84;
+  padding: 8px 12px; border-bottom: 1px solid #ccc9c0; white-space: nowrap;
+}
+.editorial-table td {
+  padding: 9px 12px; border-bottom: 1px solid #e8e4db;
+  font-size: 11px; color: #1a1a18; vertical-align: middle;
+}
+.editorial-table tr:last-child td { border-bottom: none; }
+.editorial-table tr:hover td { background: #f3efe6; }
+.editorial-table .t-name { font-family: 'Newsreader', serif; font-size: 1.05rem; font-weight: 500; }
+.editorial-table .t-cat { font-size: 8px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: #8a8a84; display: block; margin-bottom: 1px;}
+.val-pos { color: #1b4a36; font-weight: 600; }
+.val-neg { color: #8b3a3a; font-weight: 600; }
+.highlight-row { background: #f3efe6; }
+.highlight-row td { border-bottom-color: #d8d4c9; }
+
+/* ── 2-COL TABLE LAYOUT ── */
+.split-tables {
+  display: grid; grid-template-columns: 1fr; gap: 3rem; margin: 2rem 0; align-items: start;
+}
+@media (min-width: 768px) {
+  .split-tables { grid-template-columns: 1fr 1fr; gap: 2rem; }
+}
+
+/* ── DEAL TOMBSTONE GRID ── */
+.ledger-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 2rem; margin: 2.5rem 0;
+}
+.deal-card {
+  border-top: 2px solid #1a1a18; padding-top: 1rem;
+  background: #fdfbf7; transition: transform 0.2s ease;
+}
+.deal-card:hover { transform: translateY(-3px); }
+.dc-meta {
+  font-size: 9px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase;
+  color: #8a8a84; margin-bottom: 0.75rem; display: flex; justify-content: space-between;
+}
+.dc-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.75rem; }
+.dc-name { font-family: 'Newsreader', serif; font-size: 1.35rem; color: #1a1a18; line-height: 1.2; font-weight: 500; }
+.dc-amt { font-family: 'Manrope', sans-serif; font-size: 1.1rem; font-weight: 700; color: #1b4a36; }
+.dc-investors { font-size: 11px; color: #4a4a46; line-height: 1.5; padding-top: 0.75rem; border-top: 1px solid #e8e4db; }
+
+/* ── STAT CARDS ── */
+.stat-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 12px; margin: 2rem 0; }
+.stat-card { background: #f3efe6; border: 1px solid #e8e4db; padding: 1.25rem; }
+.stat-card-label { font-size: 9px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: #8a8a84; margin-bottom: .5rem; }
+.stat-card-value { font-family: 'Newsreader', serif; font-size: 2rem; color: #1b4a36; font-weight: 500; }
+.stat-card-sub { font-size: 10px; color: #8a8a84; margin-top: .25rem; }
+
+/* ── RIGHT SIDEBAR — REMOVED ── */
+
+/* ── AUTHOR BIO ── */
+.author-bio {
+  margin-top: 3.5rem; padding-top: 2rem; border-top: 1px solid #e8e4db;
+  display: flex; flex-wrap: wrap; gap: 1.5rem; align-items: flex-start;
+}
+.bio-avatar {
+  width: 80px; height: 80px; border-radius: 50%;
+  background: #f3efe6; border: 2px solid #e8e4db;
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Newsreader', serif; font-size: 22px; color: #1b4a36; flex-shrink: 0;
+}
+.bio-label { font-size: 9px; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; color: #8a8a84; margin-bottom: .5rem; }
+.bio-name { font-family: 'Newsreader', serif; font-size: 1.4rem; margin-bottom: .4rem; }
+.bio-desc { font-size: 12px; color: #4a4a46; line-height: 1.6; max-width: 380px; }
+
+/* ── CALLOUT ── */
+.callout-section {
+  margin: 4rem -2rem 0; padding: 5rem 2rem;
+  background: #f3efe6; border-top: 1px solid #e8e4db; border-bottom: 1px solid #e8e4db;
+}
+.callout-inner { max-width: 560px; margin: 0 auto; text-align: center; }
+.callout-inner h2 {
+  font-family: 'Newsreader', serif; font-size: 2.2rem;
+  line-height: 1.15; letter-spacing: -0.02em; margin-bottom: 1rem;
+}
+.callout-inner p { font-size: 13px; color: #4a4a46; line-height: 1.7; margin-bottom: 2rem; }
+.callout-btn {
+  display: inline-block; padding: 14px 32px;
+  background: #0a2418; color: #fff;
+  font-size: 10px; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase;
+  border: none; cursor: pointer; text-decoration: none;
+  transition: background 0.25s, transform 0.25s;
+}
+.callout-btn:hover { background: #1b4a36; transform: translateY(-2px); }
+.callout-btn:focus-visible { outline: 2px solid #1b4a36; outline-offset: 3px; }
+@media (prefers-reduced-motion: reduce) {
+  .callout-btn { transition: background 0.1s; }
+  .callout-btn:hover { transform: none; }
+}
+
+/* ── REDUCED MOTION ── */
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  .page { animation: none; }
+  #drawer, #drawer-overlay { transition: none; }
+  .deal-card { transition: none; }
+  .bar-seg { transition: none; }
+  .h-bar-fill, .bucket-bar-fill { transition: none; }
+}
+
+/* ── TOUCH ── */
+body { touch-action: manipulation; }
+
+/* ── FOCUS VISIBLE ── */
+.toc-link:focus-visible,
+.nav-icon-btn:focus-visible,
+.drawer-close:focus-visible { outline: 2px solid #1b4a36; outline-offset: 2px; }
+.subscribe-pill:focus-visible { outline: 2px solid #1b4a36; outline-offset: 3px; }
+
+/* Section anchor offset for sticky nav */
+[id^="section-"] { scroll-margin-top: 80px; }
+
+/* Tabular nums for data columns */
+.editorial-table td:not(:first-child),
+.pivot-table td:not(.row-label),
+.h-bar-val, .h-bar-count, .bucket-stats { font-variant-numeric: tabular-nums; }
+
+.flex-between { display: flex; justify-content: space-between; align-items: flex-start; }
+
+/* ── NEW BADGE ── */
+.new-badge {
+  display: inline-block; background: #1b4a36; color: #fff;
+  font-size: 8px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase;
+  padding: 2px 8px; margin-bottom: .5rem;
+}
+
+/* ═══════════════════════════════════════
+   NEW ANALYTICS STYLES
+═══════════════════════════════════════ */
+
+/* Sector Heatmap / Pivot Table */
+.pivot-table-wrapper { overflow-x: auto; margin: 2rem 0; }
+.pivot-table {
+  width: 100%; border-collapse: collapse; font-family: 'Manrope', sans-serif;
+}
+.pivot-table th {
+  font-size: 8px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase;
+  color: #8a8a84; padding: 8px 10px; border-bottom: 1px solid #ccc9c0;
+  white-space: nowrap; background: #fdfbf7;
+}
+.pivot-table td {
+  padding: 8px 10px; font-size: 10px; border-bottom: 1px solid #e8e4db;
+  text-align: center; font-weight: 600; color: #1a1a18;
+}
+.pivot-table .row-label {
+  text-align: left; font-size: 10px; font-weight: 600; color: #1a1a18;
+  white-space: nowrap; min-width: 120px;
+}
+.pivot-table .total-col { font-weight: 700; background: #f3efe6; }
+.pivot-table .total-row td { font-weight: 700; background: #f3efe6; border-top: 2px solid #ccc9c0; }
+
+/* Horizontal Bar (Sector Capital Ranking) */
+.h-bar-row {
+  display: flex; align-items: center; gap: 12px;
+  padding: 8px 0; border-bottom: 1px solid #e8e4db;
+}
+.h-bar-row:last-child { border-bottom: none; }
+.h-bar-label { font-size: 11px; color: #1a1a18; flex: 0 0 140px; font-weight: 500; }
+.h-bar-track { flex: 1; height: 6px; background: #e8e4db; position: relative; }
+.h-bar-fill { position: absolute; left: 0; top: 0; height: 100%; background: #1b4a36; transition: width 0.8s var(--ease-out); }
+.h-bar-val { font-size: 10px; font-weight: 700; color: #1b4a36; flex: 0 0 60px; text-align: right; }
+.h-bar-count { font-size: 9px; color: #8a8a84; flex: 0 0 50px; text-align: right; }
+
+/* Investor League Table */
+.investor-table { width: 100%; border-collapse: collapse; }
+.investor-table td { padding: 10px 12px; border-bottom: 1px solid #e8e4db; font-size: 11px; }
+.investor-table th { font-size: 8px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: #8a8a84; padding: 8px 12px; border-bottom: 1px solid #ccc9c0; }
+.investor-table .inv-name { font-family: 'Newsreader', serif; font-size: 1rem; font-weight: 500; }
+.inv-dot-row { display: flex; gap: 4px; align-items: center; }
+.inv-dot { width: 8px; height: 8px; border-radius: 50%; background: #1b4a36; flex-shrink: 0; }
+.inv-dot.empty { background: #e8e4db; }
+
+/* Ticket Size Distribution */
+.bucket-row {
+  display: flex; align-items: center; gap: 12px; padding: 10px 0; border-bottom: 1px solid #e8e4db;
+}
+.bucket-row:last-child { border-bottom: none; }
+.bucket-label { font-size: 10px; font-weight: 700; color: #1a1a18; flex: 0 0 110px; }
+.bucket-bar-track { flex: 1; height: 8px; background: #e8e4db; position: relative; }
+.bucket-bar-fill { position: absolute; left: 0; top: 0; height: 100%; transition: width 0.8s; }
+.bucket-stats { font-size: 9px; color: #8a8a84; flex: 0 0 90px; text-align: right; line-height: 1.5; }
+
+/* Section divider within article */
+.section-divider {
+  height: 1px; background: #e8e4db; margin: 3.5rem 0;
+}
+.section-label {
+  font-size: 10px; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase;
+  color: #8a8a84; margin-bottom: 1rem; border-bottom: 2px solid #1b4a36;
+  padding-bottom: 6px; display: inline-block;
+}
+
+/* Donut Chart (SVG based) */
+.donut-wrap { display: flex; align-items: center; gap: 2rem; flex-wrap: wrap; margin: 1.5rem 0; }
+.donut-legend { display: flex; flex-direction: column; gap: 10px; }
+.donut-legend-item { display: flex; align-items: center; gap: 8px; font-size: 10px; }
+.donut-legend-swatch { width: 10px; height: 10px; flex-shrink: 0; }
+.donut-legend-name { color: #1a1a18; font-weight: 600; flex: 1; }
+.donut-legend-pct { color: #8a8a84; }
+
+/* Week 14 highlight banner */
+.week-banner {
+  background: #0a2418; color: #fdfbf7;
+  padding: 1.25rem 1.5rem; margin: 2rem 0;
+  display: flex; justify-content: space-between; align-items: center;
+  flex-wrap: wrap; gap: 1rem;
+}
+.week-banner-label { font-size: 9px; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; color: #7a9f5a; margin-bottom: .3rem; }
+.week-banner-val { font-family: 'Newsreader', serif; font-size: 1.5rem; }
+.week-banner-divider { width: 1px; background: rgba(255,255,255,0.15); align-self: stretch; }
+
+@media (max-width: 640px) {
+  .week-banner { flex-direction: column; gap: .75rem; }
+  .week-banner-divider { display: none; }
+  .week-banner-val { font-size: 1.2rem; }
+  .chart-area { height: 220px; }
+  .h-bar-label { flex: 0 0 100px; font-size: 10px; }
+  .pivot-table-wrapper { font-size: 9px; }
+  .pivot-table td, .pivot-table th { padding: 5px 6px; }
+  .ledger-grid { grid-template-columns: 1fr; }
+  .stat-cards { grid-template-columns: 1fr 1fr; }
+  .split-tables { grid-template-columns: 1fr; }
+  .article-title { font-size: 2rem; }
+  .bucket-label { flex: 0 0 80px; font-size: 9px; }
+  .bucket-stats { flex: 0 0 70px; font-size: 8px; }
+}
+
+@media (max-width: 400px) {
+  .stat-cards { grid-template-columns: 1fr; }
+  .week-banner-val { font-size: 1.1rem; }
+}
+</style>
+<meta name="theme-color" content="#fdfbf7">
+<style>
+.skip-link {
+  position: absolute; top: -100%; left: 1rem;
+  background: #1b4a36; color: #fff; padding: 8px 16px;
+  font-size: 12px; font-weight: 700; text-decoration: none; z-index: 999;
+}
+.skip-link:focus { top: 1rem; }
+</style>
+</head>
+<body>
+
+<div id="progress-bar"></div>
+
+<!-- ── NAV ── -->
+<nav id="navbar">
+  <div class="nav-inner">
+    <button class="nav-icon-btn" onclick="openDrawer()" aria-label="Menu">
+      <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+        <line x1="3" y1="8" x2="21" y2="8"/><line x1="3" y1="16" x2="21" y2="16"/>
+      </svg>
+    </button>
+    <span class="nav-logo">72IB | Research</span>
+    <div style="display:flex;align-items:center;gap:1rem">
+      <a href="mailto:vivek@72ib.in?subject=Subscribe%20to%2072IB%20Research" class="subscribe-pill">Subscribe</a>
+    </div>
+  </div>
+</nav>
+
+<!-- ── DRAWER ── -->
+<div id="drawer-overlay" onclick="closeDrawer()"></div>
+<div id="drawer">
+  <div class="drawer-header">
+    <span class="drawer-label">Research Archive</span>
+    <button class="drawer-close" onclick="closeDrawer()">
+      <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+        <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+      </svg>
+    </button>
+  </div>
+  <div class="drawer-article">
+    <div class="new-badge">Latest</div>
+    <div class="drawer-cat">Market Strategy · Insights</div>
+    <div class="drawer-title">Weekly Deal Activity Insights | Week 4 – 14</div>
+    <div class="drawer-author">72IB Research · April 2026</div>
+  </div>
+  <div style="margin-top:2rem;padding-top:2rem;border-top:1px solid #e8e4db">
+    <p style="font-size:12px;color:#4a4a46;line-height:1.6;margin-bottom:1rem">Get institutional-grade deal data, macro tear-sheets, and sector intelligence — delivered weekly.</p>
+    <a href="mailto:vivek@72ib.in?subject=Subscribe%20to%2072IB%20Research" style="display:inline-flex;align-items:center;gap:6px;padding:10px 20px;background:#1b4a36;color:#fff;font-family:'Manrope',sans-serif;font-size:10px;font-weight:700;letter-spacing:0.16em;text-transform:uppercase;text-decoration:none;transition:background 0.2s" onmouseover="this.style.background='#0a2418'" onmouseout="this.style.background='#1b4a36'">
+      Subscribe
+      <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+    </a>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════
+     REPORT PAGE
+══════════════════════════════════ -->
+<div class="page active" id="page-report">
+  <div class="page-inner">
+    <div class="article-header" style="margin-bottom:3rem">
+      <div class="flex-between">
+        <div style="flex:1">
+          <div class="article-eyebrow">Insights · Market Strategy</div>
+          <h1 class="article-title">India All Sectors Financing Statistics</h1>
+          <div class="article-byline">
+            <div class="byline-avatar" style="font-size:10px">72IB</div>
+            <div>
+              <div class="byline-name">72IB Research Team</div>
+              <div class="byline-date">Posted April 3, 2026</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="header-rule"></div>
+    </div>
+
+    <div class="article-grid">
+      <!-- LEFT TOC -->
+      <aside class="toc">
+        <nav id="toc-nav">
+          <a href="#section-overview" class="toc-link active">Executive Overview</a>
+          <a href="#section-chart" class="toc-link">Financing Velocity</a>
+          <a href="#section-sector" class="toc-link">Sector Breakdown</a>
+          <a href="#section-ticket" class="toc-link">Ticket Size Analysis</a>
+          <a href="#section-investors" class="toc-link">Investor Activity</a>
+          <a href="#section-macro" class="toc-link">Global & Domestic Macro</a>
+          <a href="#section-ledger" class="toc-link">Transaction Ledger</a>
+        </nav>
+      </aside>
+
+      <!-- CENTER -->
+      <article>
+        <div id="section-overview">
+          <p class="lead-text" style="font-style:italic;font-size:1rem;color:#666660;border-left:3px solid #e8e4db;padding-left:1rem;font-family:'Newsreader',serif">
+            This intelligence briefing is compiled for founders, builders, and investors to track capital velocity across Indian and global markets.
+          </p>
+
+          <p class="body-text" style="margin-top:2rem">Between Week 4 and Week 14 of 2026, the Indian ecosystem demonstrated sustained momentum. Over <strong>US$1.94 Billion</strong> was raised across <strong>206 disclosed deals</strong>, spanning eleven distinct sectors — with Ecommerce, Fintech, and Enterprise Tech commanding the lion's share of capital deployed.</p>
+
+          <!-- Week 14 Spotlight Banner -->
+          <div class="week-banner">
+            <div>
+              <div class="week-banner-label">Week 14 Spotlight · Apr 1–3, 2026</div>
+              <div class="week-banner-val">15 Deals · $131.5M Deployed</div>
+            </div>
+            <div class="week-banner-divider"></div>
+            <div>
+              <div class="week-banner-label">Largest Transaction</div>
+              <div class="week-banner-val">Noon — $44M (Enterprise Tech)</div>
+            </div>
+            <div class="week-banner-divider"></div>
+            <div>
+              <div class="week-banner-label">Notable Backers</div>
+              <div class="week-banner-val" style="font-size:1.1rem">First Round Capital, Elevation Capital, Accel</div>
+            </div>
+          </div>
+
+          <div class="stat-cards">
+            <div class="stat-card">
+              <div class="stat-card-label">Total Capital Raised</div>
+              <div class="stat-card-value">$1.94B</div>
+              <div class="stat-card-sub">Week 4 to Week 14</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-card-label">Total Volume</div>
+              <div class="stat-card-value">206</div>
+              <div class="stat-card-sub">Disclosed Transactions</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-card-label">Peak Week</div>
+              <div class="stat-card-value">W7</div>
+              <div class="stat-card-sub">$485.8M across 45 deals</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-card-label">Avg. Deal Size</div>
+              <div class="stat-card-value">$9.4M</div>
+              <div class="stat-card-sub">Across disclosed rounds</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- CHART -->
+        <h2 id="section-chart" style="font-family:'Newsreader',serif;font-size:1.6rem;margin:3.5rem 0 1rem;letter-spacing:-0.01em">Financing Velocity: Week 4 – 14</h2>
+        <p class="body-text">The visualization below tracks capital deployed week-over-week. Hover over the bars to explore the largest anchoring transactions and underlying deal volume counts.</p>
+
+        <div class="chart-fig">
+          <div class="chart-title">Weekly Deal Activity Insights</div>
+          <div class="chart-sub">Deal Value in $M mapped alongside corresponding deal volume. Week 8 & 9 excluded — no data reported.</div>
+
+          <div class="chart-area" id="mainChartArea">
+            <div class="chart-y-labels">
+              <span class="chart-y-label">500</span>
+              <span class="chart-y-label">375</span>
+              <span class="chart-y-label">250</span>
+              <span class="chart-y-label">125</span>
+              <span class="chart-y-label">0</span>
+            </div>
+            <div class="chart-grid-lines">
+              <div class="chart-grid-line" style="top:0%"></div>
+              <div class="chart-grid-line" style="top:25%"></div>
+              <div class="chart-grid-line" style="top:50%"></div>
+              <div class="chart-grid-line" style="top:75%"></div>
+              <div class="chart-grid-line" style="top:100%;border-color:rgba(0,0,0,.2)"></div>
+            </div>
+            <div class="chart-bars-row" id="chartBars"></div>
+          </div>
+
+          <div class="chart-legend">
+            <div class="legend-item"><div class="legend-dot" style="background:#1b4a36"></div>Deal Value ($M)</div>
+            <div class="legend-item"><div class="legend-dot" style="background:#fdfbf7; border: 1px solid #ccc9c0"></div>Deal Count</div>
+          </div>
+          <div class="chart-footnote">
+            Source: 72IB Research Database. Across all ticket sizes. Bar height represents total capital deployed in USD Millions.
+          </div>
+          <div class="chart-branding">
+            <span style="font-style:italic">More insights: 72ib.com/research</span>
+            <span class="chart-branding-logo">72IB Research</span>
+          </div>
+        </div>
+
+        <!-- ══ SECTOR BREAKDOWN ══ -->
+        <div class="section-divider"></div>
+        <h2 id="section-sector" style="font-family:'Newsreader',serif;font-size:1.6rem;margin:0 0 1rem;letter-spacing:-0.01em">Sector Capital Breakdown</h2>
+        <p class="body-text">Ecommerce led by a wide margin in deal count but Fintech delivered outsized ticket sizes on average. AI & Enterprise Tech continue to attract institutional conviction at earlier stages.</p>
+
+        <div class="chart-fig" style="margin-top:1.5rem">
+          <div class="chart-title" style="font-size:1.2rem">Capital Deployed by Sector</div>
+          <div class="chart-sub">USD Millions · Week 4–14 · Sorted by total capital</div>
+          <div id="sectorBars" style="margin-top:1.5rem"></div>
+          <div class="chart-footnote" style="margin-top:1.5rem">
+            Deal counts in parentheses. "Deep Tech & Hardware" consolidates Advanced Technology & Hardware categories.
+          </div>
+        </div>
+
+        <!-- Sector Pivot Heatmap -->
+        <p class="body-text" style="margin-top:1.5rem">The matrix below maps deal volume by sector across weeks, revealing which sectors showed sustained activity versus episodic spikes.</p>
+
+        <div class="chart-fig">
+          <div class="chart-title" style="font-size:1.2rem">Sector × Week Activity Matrix</div>
+          <div class="chart-sub">Number of deals per sector per week. Darker = more deals.</div>
+          <div class="pivot-table-wrapper">
+            <table class="pivot-table" id="pivotTable"></table>
+          </div>
+          <div class="chart-footnote" style="margin-top:1rem">
+            Heat intensity is relative to maximum deal count in any single cell.
+          </div>
+        </div>
+
+        <!-- ══ TICKET SIZE ══ -->
+        <div class="section-divider"></div>
+        <h2 id="section-ticket" style="font-family:'Newsreader',serif;font-size:1.6rem;margin:0 0 1rem;letter-spacing:-0.01em">Ticket Size Distribution</h2>
+        <p class="body-text">The ecosystem skews toward sub-$10M rounds, reflecting a healthy seed and pre-Series A layer. However, large-ticket deals ($50M+) account for a disproportionate share of total capital — a pattern consistent with bifurcation in emerging market VC.</p>
+
+        <div class="chart-fig">
+          <div class="chart-title" style="font-size:1.2rem">Deal Distribution by Ticket Size</div>
+          <div class="chart-sub">% share of deal count vs. % share of total capital deployed</div>
+          <div id="ticketBuckets" style="margin-top:1.5rem"></div>
+
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:2rem;margin-top:2rem;padding-top:1.5rem;border-top:1px solid #e8e4db">
+            <div>
+              <div class="stat-card-label" style="margin-bottom:.5rem">Median Deal Size</div>
+              <div style="font-family:'Newsreader',serif;font-size:1.8rem;color:#1b4a36">$5.0M</div>
+              <div style="font-size:10px;color:#8a8a84">Across 206 disclosed transactions</div>
+            </div>
+            <div>
+              <div class="stat-card-label" style="margin-bottom:.5rem">$50M+ Deals vs Capital Share</div>
+              <div style="font-family:'Newsreader',serif;font-size:1.8rem;color:#1b4a36">6 deals · 28%</div>
+              <div style="font-size:10px;color:#8a8a84">6 transactions account for $550M+</div>
+            </div>
+          </div>
+          <div class="chart-footnote" style="margin-top:1.5rem">
+            Bar length = % of deal count (green). Smaller bar = % of total capital. Shown proportionally.
+          </div>
+        </div>
+
+        <!-- ══ INVESTOR ACTIVITY ══ -->
+        <div class="section-divider"></div>
+        <h2 id="section-investors" style="font-family:'Newsreader',serif;font-size:1.6rem;margin:0 0 1rem;letter-spacing:-0.01em">Investor Activity League Table</h2>
+        <p class="body-text">Peak XV Partners and Accel lead in deal participation frequency, consistent with their portfolio construction strategies. Blume Ventures and Fireside Ventures dominate early-stage volume while international capital (Lightspeed, WestBridge) anchors larger tickets.</p>
+
+        <div class="chart-fig">
+          <div class="chart-title" style="font-size:1.2rem">Most Active Investors · W4–W14</div>
+          <div class="chart-sub">By disclosed deal co-investments across the coverage period</div>
+          <div class="table-wrapper" style="margin:1.5rem 0 0">
+            <table class="investor-table">
+              <thead>
+                <tr>
+                  <th style="text-align:left">Investor</th>
+                  <th style="text-align:center">Deals</th>
+                  <th style="text-align:left">Activity</th>
+                  <th style="text-align:left">Profile</th>
+                </tr>
+              </thead>
+              <tbody id="investorTable"></tbody>
+            </table>
+          </div>
+          <div class="chart-footnote" style="margin-top:1.5rem">
+            Based on disclosed co-investment activity. Counts represent minimum participation — undisclosed rounds excluded.
+          </div>
+        </div>
+
+        <!-- MACRO -->
+        <div class="section-divider"></div>
+        <h2 id="section-macro" style="font-family:'Newsreader',serif;font-size:1.6rem;margin:0 0 0;letter-spacing:-0.01em">Global & Domestic Macro Movements</h2>
+        
+        <div class="split-tables">
+          <div>
+            <div class="section-label">Global Indices & Commodities</div>
+            <div class="table-wrapper" style="margin-top:0">
+              <table class="editorial-table">
+                <thead>
+                  <tr>
+                    <th>Index / Asset</th>
+                    <th style="text-align:right">Price</th>
+                    <th style="text-align:right">1W Ret</th>
+                    <th style="text-align:right">YTD Ret</th>
+                  </tr>
+                </thead>
+                <tbody id="globalMacroTable"></tbody>
+              </table>
+            </div>
+          </div>
+
+          <div>
+            <div class="section-label">Key FinTech + Tech + FIG (India)</div>
+            <div class="table-wrapper" style="margin-top:0">
+              <table class="editorial-table">
+                <thead>
+                  <tr>
+                    <th>Company</th>
+                    <th style="text-align:right">Price (₹)</th>
+                    <th style="text-align:right">Cap ($B)</th>
+                    <th style="text-align:right">1W Ret</th>
+                    <th style="text-align:right">YTD Ret</th>
+                  </tr>
+                </thead>
+                <tbody id="indianMacroTable"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- LEDGER -->
+        <h2 id="section-ledger" style="font-family:'Newsreader',serif;font-size:1.6rem;margin:3.5rem 0 1rem;letter-spacing:-0.01em">The Transaction Ledger</h2>
+        <p class="body-text">A curated selection of the <strong>Top 20 transactions from Weeks 11–14</strong>, highlighting major capital deployments and active syndicates in the current environment.</p>
+
+        <div class="ledger-grid" id="ledgerGrid"></div>
+
+        <div class="author-bio">
+          <div class="bio-avatar" style="font-size:11px">72IB</div>
+          <div>
+            <div class="bio-label">About the Publisher</div>
+            <div class="bio-name">72IB Research</div>
+            <p class="bio-desc">Provides institutional-grade data, insights, and macro analysis on technology, private markets, and capital flows globally.</p>
+          </div>
+        </div>
+      </article>
+
+      <!-- RIGHT SIDEBAR — intentionally empty, column kept for layout balance -->
+    </div>
+
+    <div class="callout-section">
+      <div class="callout-inner">
+        <h2>Want More Intelligence?</h2>
+        <p>Deep dives into what makes markets move — from the analysts at 72IB Research.</p>
+        <a href="mailto:vivek@72ib.in?subject=Join%20the%2072IB%20Network" class="callout-btn">Join the Network</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════
+// DATA PAYLOADS — UPDATED W14
+// ═══════════════════════════════════════
+
+const marketData = [
+  { cat: "Index", name: "Nifty 50 (India)", price: "22,713", w: -0.47, y: -13.08, hl: false },
+  { cat: "Index", name: "Nifty Small Cap 100", price: "15,650", w: +0.20, y: -11.65, hl: false },
+  { cat: "Index", name: "Nifty Mid Cap 100", price: "53,677", w: -0.78, y: -11.25, hl: false },
+  { cat: "Index", name: "Hang Seng (HK)", price: "25,116", w: +1.4, y: -4.64, hl: true },
+  { cat: "Index", name: "Shanghai Composite", price: "3,880", w: -0.11, y: -3.56, hl: false },
+  { cat: "Index", name: "Nikkei 225 (Japan)", price: "53,123", w: +2.1, y: 2.49, hl: false },
+  { cat: "Index", name: "NASDAQ Composite", price: "21,879", w: +2.78, y: -5.84, hl: false },
+  { cat: "Index", name: "S&P 500 (USA)", price: "6,582", w: +2.00, y: -4.02, hl: false },
+  { cat: "Index", name: "FTSE 100 (UK)", price: "10,436", w: +4.65, y: +4.88, hl: false },
+  { cat: "Commodity", name: "Gold NY Spot", price: "$4,676", w: +4.08, y: +8.37, hl: true },
+  { cat: "Commodity", name: "Crude Oil WTI", price: "$112.06", w: +12.46, y: +95.16, hl: false },
+  { cat: "Commodity", name: "Bitcoin", price: "$67,045", w: -1.74, y: -23.30, hl: false }
+];
+
+const indianStocks = [
+  { name: "HDFC Bank", price: "751.00", cap: "124.05", w: -1.70, y: -24.23 },
+  { name: "State Bank of India", price: "1,018.00", cap: "100.88", w: -2.32, y: +3.38 },
+  { name: "Bajaj Finance", price: "828.90", cap: "55.22", w: -3.60, y: -14.82 },
+  { name: "Zomato (Eternal)", price: "231.99", cap: "24.00", w: -2.07, y: -18.26 },
+  { name: "Jio Financial", price: "229.95", cap: "15.65", w: -2.48, y: -22.24 },
+  { name: "HDFC Life", price: "565.00", cap: "13.11", w: -6.85, y: -24.68 },
+  { name: "Chola Finance", price: "1,355.10", cap: "12.40", w: -5.76, y: -21.40 },
+  { name: "ICICI Lombard", price: "1,693.70", cap: "9.04", w: -4.10, y: -13.45 },
+  { name: "HDFC AMC", price: "2,357.50", cap: "10.80", w: +1.48, y: -10.98 },
+  { name: "PolicyBazaar", price: "1,425.10", cap: "7.09", w: +1.39, y: -21.08 },
+  { name: "Nykaa", price: "247.29", cap: "7.56", w: +1.77, y: -6.95 },
+  { name: "Paytm", price: "1,002.95", cap: "6.91", w: -3.69, y: -22.35 }
+];
+
+const weeklyChartData = [
+  { w: 4,  deals: 35, amt: 302.8, top: "Emergent",  topAmt: "$70M" },
+  { w: 5,  deals: 17, amt: 95.6,  top: "Easy Home Finance", topAmt: "$30M" },
+  { w: 6,  deals: 18, amt: 79.5,  top: "Varaha",    topAmt: "$20M" },
+  { w: 7,  deals: 45, amt: 485.8, top: "Spinny",    topAmt: "$170M" },
+  { w: 10, deals: 10, amt: 66.1,  top: "Pronto",    topAmt: "$25M" },
+  { w: 11, deals: 21, amt: 206.5, top: "Mozark",    topAmt: "$40M" },
+  { w: 12, deals: 21, amt: 229.6, top: "Neo Group",  topAmt: "$53.4M" },
+  { w: 13, deals: 24, amt: 342.8, top: "Euler Motors", topAmt: "$73.6M" },
+  { w: 14, deals: 15, amt: 131.5, top: "Noon",      topAmt: "$44M" }
+];
+
+// Sector data (pre-computed)
+const sectorData = [
+  { s: "Ecommerce",           amt: 496.3, deals: 49 },
+  { s: "Fintech",             amt: 338.8, deals: 22 },
+  { s: "Enterprise Tech",     amt: 229.4, deals: 10 },
+  { s: "AI",                  amt: 188.9, deals: 22 },
+  { s: "Clean Tech",          amt: 153.5, deals: 20 },
+  { s: "Deep Tech & Hardware",amt: 118.2, deals: 26 },
+  { s: "Health Tech",         amt: 112.6, deals: 16 },
+  { s: "Enterprise Services", amt: 66.6,  deals: 8  },
+  { s: "Consumer Services",   amt: 60.2,  deals: 10 },
+  { s: "Foodtech",            amt: 55.2,  deals: 4  },
+  { s: "Travel Tech",         amt: 45.9,  deals: 3  },
+  { s: "Agritech",            amt: 37.7,  deals: 5  },
+  { s: "Logistics",           amt: 17.8,  deals: 2  },
+  { s: "Real Estate Tech",    amt: 10.8,  deals: 3  },
+  { s: "Media & Entertainment",amt: 5.3,  deals: 3  },
+  { s: "Edtech",              amt: 2.9,   deals: 3  },
+];
+
+// Sector-Week pivot (deal counts)
+const pivotSectors = ["Ecommerce","Fintech","AI","Clean Tech","Deep Tech & Hardware","Health Tech","Enterprise Tech","Consumer Services","Foodtech","Agritech"];
+const pivotWeeks   = [4,5,6,7,10,11,12,13,14];
+// Each inner array = deal counts per week
+const pivotData = [
+  [6, 4, 4, 9, 1, 3,  3, 5, 2],  // Ecommerce
+  [5, 2, 1, 4, 2, 3,  3, 5, 2],  // Fintech
+  [5, 1, 3, 4, 1, 2,  1, 3, 2],  // AI
+  [2, 2, 2, 5, 0, 2,  1, 3, 1],  // Clean Tech
+  [4, 2, 3, 3, 1, 2,  3, 1, 2],  // Deep Tech
+  [2, 2, 0, 4, 1, 0,  2, 1, 2],  // Health Tech
+  [1, 1, 0, 2, 0, 2,  3, 2, 1],  // Enterprise Tech
+  [2, 1, 2, 2, 1, 0,  0, 0, 2],  // Consumer Services
+  [0, 0, 0, 0, 0, 2,  1, 1, 0],  // Foodtech
+  [0, 0, 0, 0, 0, 2,  0, 1, 1],  // Agritech
+];
+
+// Ticket buckets
+const ticketBuckets = [
+  { label: "$50M+",      count: 6,  pctDeals: 2.9,  capital: 552.3, pctCap: 28.5, color: "#0a2418" },
+  { label: "$20M–$49M",  count: 14, pctDeals: 6.8,  capital: 387.6, pctCap: 20.0, color: "#1b4a36" },
+  { label: "$10M–$19M",  count: 16, pctDeals: 7.8,  capital: 215.4, pctCap: 11.1, color: "#2d6b4f" },
+  { label: "$5M–$9.9M",  count: 29, pctDeals: 14.1, capital: 193.9, pctCap: 10.0, color: "#3d8a67" },
+  { label: "$1M–$4.9M",  count: 91, pctDeals: 44.2, capital: 220.3, pctCap: 11.4, color: "#7ab896" },
+  { label: "<$1M",       count: 50, pctDeals: 24.3, capital: 29.1,  pctCap: 1.5,  color: "#b8ddc9" },
+];
+
+// Top investors
+const topInvestors = [
+  { name: "Peak XV Partners",   deals: 7, profile: "Growth · Multi-stage", sectors: "Fintech, Consumer, AI" },
+  { name: "Accel",              deals: 7, profile: "Early Stage · Series A+", sectors: "Ecommerce, AI, Fintech" },
+  { name: "Blume Ventures",     deals: 6, profile: "Seed · Pre-Series A", sectors: "AI, Fintech, Deep Tech" },
+  { name: "Fireside Ventures",  deals: 5, profile: "Consumer-focused", sectors: "Ecommerce, Consumer" },
+  { name: "Lightspeed",         deals: 5, profile: "Multi-stage · Global", sectors: "Enterprise Tech, Fintech, AI" },
+  { name: "Kae Capital",        deals: 4, profile: "Early Stage", sectors: "Fintech, Cleantech, Hardware" },
+  { name: "Alteria Capital",    deals: 4, profile: "Venture Debt", sectors: "Fintech, Consumer, Foodtech" },
+  { name: "3one4 Capital",      deals: 4, profile: "Seed · Series A", sectors: "Deep Tech, Clean Tech, Ecommerce" },
+  { name: "Inflection Point Ventures", deals: 4, profile: "Angel · Seed", sectors: "Health, Fintech, Consumer" },
+  { name: "Ankur Capital",      deals: 3, profile: "Impact · Agritech", sectors: "Agritech, AI, Cleantech" },
+];
+
+const top20RecentDeals = [
+  { w: 14, d: "03-Apr-26", n: "Noon",             s: "Enterprise Tech", a: 44,   i: "Chemistry, First Round Capital, Elevation Capital, Afore Capital" },
+  { w: 14, d: "01-Apr-26", n: "Palmonas",          s: "Ecommerce",       a: 40,   i: "Xponentia Capital, Vertex Growth Fund, Vertex Ventures SE Asia & India" },
+  { w: 14, d: "31-Mar-26", n: "Bachatt",           s: "Fintech",         a: 12,   i: "Accel, Lightspeed, Info Edge Ventures" },
+  { w: 14, d: "01-Apr-26", n: "NowPurchase",       s: "Ecommerce",       a: 8.5,  i: "Bajaj Finserv, Info Edge Ventures, Orios Venture Partners" },
+  { w: 14, d: "31-Mar-26", n: "Gnani.ai",          s: "AI",              a: 10,   i: "Aavishkaar Capital, Info Edge Ventures" },
+  { w: 14, d: "31-Mar-26", n: "Sign3",             s: "AI",              a: 1.5,  i: "Cedar Hill Capital, Smile Group, Rajesh Sawhney (GSF)" },
+  { w: 13, d: "24-Mar-26", n: "Euler Motors",      s: "Clean Tech",      a: 73.6, i: "Lightrock, Hero MotoCorp, Blume Ventures, BlackSoil" },
+  { w: 13, d: "25-Mar-26", n: "Rocketlane",        s: "Enterprise Tech", a: 60,   i: "Insight Partners" },
+  { w: 13, d: "24-Mar-26", n: "CureFit",           s: "Health Tech",     a: 47.2, i: "Temasek" },
+  { w: 13, d: "24-Mar-26", n: "Swish",             s: "Foodtech",        a: 38,   i: "Hara Global, Bain Capital Ventures, Alteria Capital, Accel" },
+  { w: 13, d: "25-Mar-26", n: "Fullife Healthcare",s: "Ecommerce",       a: 32,   i: "Elev8 Venture Partners" },
+  { w: 13, d: "26-Mar-26", n: "Deccan AI",         s: "AI",              a: 25,   i: "A91 Partners, Susquehanna, Prosus" },
+  { w: 13, d: "26-Mar-26", n: "Plum",              s: "Fintech",         a: 20.4, i: "Peak XV Ventures, Tanglin Venture Partners, GMO Venture Partners" },
+  { w: 12, d: "20-Mar-26", n: "Neo Group",         s: "Fintech",         a: 53.4, i: "TVS Capital" },
+  { w: 12, d: "16-Mar-26", n: "Ecofy",             s: "Fintech",         a: 42,   i: "British International Investment, Finnfund, FMO" },
+  { w: 12, d: "16-Mar-26", n: "Atlys",             s: "Travel Tech",     a: 36,   i: "Susquehanna Asia VC, MakeMyTrip, Elevation Capital" },
+  { w: 11, d: "11-Mar-26", n: "Mozark",            s: "Enterprise Tech", a: 40,   i: "IFC, RMB Capitalworks, Kalaari Capital" },
+  { w: 11, d: "10-Mar-26", n: "Captain Fresh",     s: "Ecommerce",       a: 31.4, i: "Blue Earth Capital" },
+  { w: 11, d: "13-Mar-26", n: "Waycool",           s: "Agritech",        a: 22.7, i: "Lightrock India" },
+  { w: 11, d: "12-Mar-26", n: "Mosiac Wellness",   s: "Ecommerce",       a: 21.7, i: "360One Asset" },
+];
+
+// ═══════════════════════════════════════
+// RENDER HELPERS
+// ═══════════════════════════════════════
+function getRetHtml(val) {
+  if (val > 0) return `<span class="val-pos">+${val.toFixed(2)}%</span>`;
+  if (val < 0) return `<span class="val-neg">${val.toFixed(2)}%</span>`;
+  return `<span>${val.toFixed(2)}%</span>`;
+}
+
+// ═══════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════
+document.addEventListener('DOMContentLoaded', () => {
+
+  // 1. Global Macro Table
+  const gmTable = document.getElementById('globalMacroTable');
+  marketData.forEach(m => {
+    gmTable.innerHTML += `
+      <tr class="${m.hl ? 'highlight-row' : ''}">
+        <td><span class="t-cat">${m.cat}</span><span class="t-name">${m.name}</span></td>
+        <td style="text-align:right; font-weight:600;">${m.price}</td>
+        <td style="text-align:right">${getRetHtml(m.w)}</td>
+        <td style="text-align:right">${getRetHtml(m.y)}</td>
+      </tr>`;
+  });
+
+  // 2. Indian Stocks Table
+  const isTable = document.getElementById('indianMacroTable');
+  indianStocks.forEach(s => {
+    isTable.innerHTML += `
+      <tr>
+        <td><span class="t-name">${s.name}</span></td>
+        <td style="text-align:right; font-weight:600;">₹${s.price}</td>
+        <td style="text-align:right; color:#8a8a84;">$${s.cap}B</td>
+        <td style="text-align:right">${getRetHtml(s.w)}</td>
+        <td style="text-align:right">${getRetHtml(s.y)}</td>
+      </tr>`;
+  });
+
+  // 3. Weekly Bar Chart
+  const chartRow = document.getElementById('chartBars');
+  const maxAmt = 500;
+  weeklyChartData.forEach(w => {
+    const heightPct = (w.amt / maxAmt) * 100;
+    chartRow.innerHTML += `
+      <div class="bar-group">
+        <div class="deal-count-pill" style="bottom: ${heightPct}%;">${w.deals}</div>
+        <div class="bar-seg" style="height: ${heightPct}%;"></div>
+        <span class="bar-x-label">W${w.w}</span>
+        <div class="chart-tooltip">
+          <div class="tt-title">Week ${w.w} · Top Deal</div>
+          <div class="tt-row"><span>${w.top}</span><span class="val">${w.topAmt}</span></div>
+          <div class="tt-row" style="color:#8a8a84; margin-top:6px;"><span>Total Deals</span><span style="color:#fdfbf7">${w.deals}</span></div>
+          <div class="tt-row" style="color:#8a8a84;"><span>Total Volume</span><span style="color:#fdfbf7">$${w.amt}M</span></div>
+        </div>
+      </div>`;
+  });
+
+  // 4. Sector Horizontal Bars
+  const sectorEl = document.getElementById('sectorBars');
+  const maxSectorAmt = sectorData[0].amt;
+  sectorData.forEach(s => {
+    const pct = (s.amt / maxSectorAmt * 100).toFixed(1);
+    sectorEl.innerHTML += `
+      <div class="h-bar-row">
+        <div class="h-bar-label">${s.s}</div>
+        <div class="h-bar-track"><div class="h-bar-fill" style="width:${pct}%"></div></div>
+        <div class="h-bar-val">$${s.amt >= 100 ? (s.amt/1000).toFixed(2)+'B' : s.amt.toFixed(1)+'M'}</div>
+        <div class="h-bar-count">${s.deals} deals</div>
+      </div>`;
+  });
+
+  // 5. Sector × Week Pivot Table
+  const pivotEl = document.getElementById('pivotTable');
+  const maxCell = Math.max(...pivotData.flat());
+
+  let thead = `<thead><tr><th style="text-align:left">Sector</th>`;
+  pivotWeeks.forEach(w => thead += `<th>W${w}</th>`);
+  thead += `<th>Total</th></tr></thead>`;
+
+  let tbody = '<tbody>';
+  pivotData.forEach((row, i) => {
+    const rowTotal = row.reduce((a,b) => a+b, 0);
+    tbody += `<tr>
+      <td class="row-label">${pivotSectors[i]}</td>`;
+    row.forEach(v => {
+      const intensity = v > 0 ? (0.08 + (v / maxCell) * 0.55).toFixed(2) : 0;
+      const textColor = v / maxCell > 0.45 ? '#fff' : '#1a1a18';
+      const bg = v > 0 ? `background:rgba(27,74,54,${intensity});color:${textColor}` : 'color:#ccc9c0';
+      tbody += `<td style="${bg}">${v > 0 ? v : '—'}</td>`;
+    });
+    tbody += `<td class="total-col">${rowTotal}</td></tr>`;
+  });
+  // Totals row
+  const weekTotals = pivotWeeks.map((_, wi) => pivotData.reduce((sum, row) => sum + row[wi], 0));
+  const grandTotal = weekTotals.reduce((a,b) => a+b, 0);
+  tbody += `<tr class="total-row"><td class="row-label" style="font-weight:700">TOTAL</td>`;
+  weekTotals.forEach(t => tbody += `<td>${t}</td>`);
+  tbody += `<td class="total-col">${grandTotal}</td></tr>`;
+  tbody += '</tbody>';
+
+  pivotEl.innerHTML = thead + tbody;
+
+  // 6. Ticket Size Distribution
+  const ticketEl = document.getElementById('ticketBuckets');
+  const maxDealPct = Math.max(...ticketBuckets.map(b => b.pctDeals));
+  ticketBuckets.forEach(b => {
+    const dealBarW = (b.pctDeals / maxDealPct * 100).toFixed(1);
+    const capBarW  = (b.pctCap / 100 * 100).toFixed(1);
+    ticketEl.innerHTML += `
+      <div class="bucket-row">
+        <div class="bucket-label">${b.label}</div>
+        <div style="flex:1">
+          <div style="margin-bottom:4px">
+            <div style="display:flex;align-items:center;gap:6px;margin-bottom:2px">
+              <span style="font-size:9px;font-weight:700;color:#8a8a84;width:70px">Deal count</span>
+              <div class="bucket-bar-track" style="flex:1">
+                <div class="bucket-bar-fill" style="width:${dealBarW}%;background:${b.color}"></div>
+              </div>
+              <span style="font-size:10px;font-weight:700;color:${b.color};width:40px;text-align:right">${b.pctDeals}%</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:6px">
+              <span style="font-size:9px;font-weight:700;color:#8a8a84;width:70px">Capital</span>
+              <div class="bucket-bar-track" style="flex:1">
+                <div class="bucket-bar-fill" style="width:${capBarW}%;background:${b.color};opacity:0.35"></div>
+              </div>
+              <span style="font-size:10px;color:#8a8a84;width:40px;text-align:right">${b.pctCap}%</span>
+            </div>
+          </div>
+        </div>
+        <div class="bucket-stats">${b.count} deals<br>$${b.capital.toFixed(0)}M</div>
+      </div>`;
+  });
+
+  // 7. Investor Table
+  const invEl = document.getElementById('investorTable');
+  topInvestors.forEach(inv => {
+    const dots = Array.from({length: 10}, (_,i) => 
+      `<div class="inv-dot${i < inv.deals ? '' : ' empty'}"></div>`
+    ).join('');
+    invEl.innerHTML += `
+      <tr>
+        <td><div class="inv-name">${inv.name}</div><div style="font-size:9px;color:#8a8a84;margin-top:2px">${inv.profile}</div></td>
+        <td style="text-align:center;font-family:'Newsreader',serif;font-size:1.4rem;font-weight:500;color:#1b4a36">${inv.deals}</td>
+        <td><div class="inv-dot-row">${dots}</div></td>
+        <td style="font-size:10px;color:#4a4a46;max-width:140px">${inv.sectors}</td>
+      </tr>`;
+  });
+
+  // 8. Transaction Ledger
+  const ledgerGrid = document.getElementById('ledgerGrid');
+  top20RecentDeals.forEach((d) => {
+    ledgerGrid.innerHTML += `
+      <div class="deal-card">
+        <div class="dc-meta">
+          <span>Week ${d.w} &nbsp;&middot;&nbsp; ${d.d}</span>
+          <span>${d.s}</span>
+        </div>
+        <div class="dc-header">
+          <div class="dc-name">${d.n}</div>
+          <div class="dc-amt">$${d.a}M</div>
+        </div>
+        <div class="dc-investors">${d.i}</div>
+      </div>`;
+  });
+
+});
+
+// ── UI INTERACTIONS ──
+function openDrawer() {
+  document.getElementById('drawer').classList.add('open');
+  document.getElementById('drawer-overlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function closeDrawer() {
+  document.getElementById('drawer').classList.remove('open');
+  document.getElementById('drawer-overlay').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+// Active TOC + Scroll Progress
+window.addEventListener('scroll', () => {
+  const y = window.scrollY;
+  const nav = document.getElementById('navbar');
+  const pb = document.getElementById('progress-bar');
+  nav.classList.toggle('scrolled', y > 30);
+  const docH = document.documentElement.scrollHeight - window.innerHeight;
+  pb.style.transform = `scaleX(${docH > 0 ? y / docH : 0})`;
+
+  const sections = ['section-overview','section-chart','section-sector','section-ticket','section-investors','section-macro','section-ledger'];
+  let currentSection = sections[0];
+  sections.forEach(id => {
+    const el = document.getElementById(id);
+    if (el && window.scrollY >= (el.offsetTop - 180)) currentSection = id;
+  });
+  document.querySelectorAll('.toc-link').forEach(link => {
+    link.classList.remove('active');
+    if (link.getAttribute('href') === '#' + currentSection) {
+      link.classList.add('active');
+      if (window.innerWidth <= 1023) {
+        const navContainer = link.closest('nav');
+        if (navContainer) {
+          const scrollLeft = link.offsetLeft - (navContainer.clientWidth / 2) + (link.clientWidth / 2);
+          navContainer.scrollTo({ left: scrollLeft, behavior: 'smooth' });
+        }
+      }
+    }
+  });
+}, {passive:true});
+</script>
+</body>
+</html>
